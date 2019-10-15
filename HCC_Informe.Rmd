@@ -1,0 +1,308 @@
+---
+title: "Hepatocarcinoma"
+author: "Camilo Campusano"
+date: "`r format(Sys.time(), '%d, %m, %Y')`"
+output:
+  pdf_document: default
+  html_document:
+    df_print: paged
+latex_engine: xelatex
+linkcolor: blue
+logo: puc_logo.jpg
+subtitle: BIO4022 - Informe Final
+bibliography: Biblio_HCC.bib
+toc: yes
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+library(ggplot2)
+library(knitr)
+library(rmarkdown)
+library(stargazer)
+library(readr)
+library(broom)
+library(tinytex)
+library(yaml)
+library(kableExtra)
+```
+
+# Introducción
+## Epidemiología
+  El Hepatocarcinoma (HCC) corresponde al quinto cáncer más prevalente y el segundo más mortal a nivel mundial. Además, presenta una prevalencia e incidencia de 854.000 casos/año y 810.000 muertes/año, respectivamente (@Galle2018, @Fitzmaurice2017, @El-Serag2012, @Chen2006).
+  Sin embargo, se ha logrado determinar que la prevalencia, incidencia e inclusive la mortalidad depende del contexto de las poblaciones, teniendo una disctribución acotada a ciertas regiones.
+
+![](/Users/camilocampusano/Documents/2do Semestre/R/GitHub Proyect/Trabajo_Final_CCampusano/hcc-dataset/FIG 01.png)
+**Figura 1. Incidencia del HCC de acuerdo a su distribución geográfica** Izquierda: _Número de casos por país ajustado a la incidencia por edad cada 100.000 habitantes en el 2012. La intencidad del color es proporcional a la magnitud de la incidencia._ Derecha: _número de casos por país._ Fuente: http://globocan.iarc.fr
+
+Por otro lado, se ha demostrado que existe fuerte preponderancia en hombres sobre mujeres, presentándose en una proporción de 2-2,5:1.
+
+En relación al componente etiológico se ha determinado que diversos virus, como así diversas conductas de riesgo podrían ser la causa o actuar como coadyuvantes para su desarrollo.
+
+## Etiología
+Como se decía previamente y en relación con la etiología, el HCC está altamente relacionado a los virus con tropismo hepático, tales como el Virus de la Hepatitis B (VHB), Virus de la Hepatitis C (VHB), e incluso el Virus de la Inmunodeficiencia Humana (VIH) (@Fitzmaurice2017, @Ioannou2007, @Chen2006, @Tsilidisg7607, @Ioannou2013). Es por esto, que en ciertas regiones como latinoamérica se ha propuesto la vacunación contra el VHB como profilaxis para erradicar el HCC. 
+Por otro lado, conductas de riesgo como el alcoholismo (@Mancebo2013) y el tabaquismo (@EuropeanAssociationfortheStudyoftheLiverEASLEmailtheauthorlowasterisk2016, @Trichopoulos2011) han sido estudiados como factores de riesgo para el desarrollo de HCC, como la obesidad y la diabetes tipo 2 (@Tsilidisg7607, @Calle2003, @Galle2018, @EuropeanAssociationfortheStudyoftheLiverEASLEmailtheauthorlowasterisk2016).
+
+Tal como se había discutido previamente, todos los factores de riesgo pueden ser agrupados localmente (Tabla 1); lo permite enfocar esfuerzos con el fin de controlar la patología (por ejemplo:propiciar estilos de vida saludable).
+
+Como se puede apreciar en la Tabla 1, en latinoamérica y en el lejano Oriente el principal factor de risgo de HCC es VHB. Mientras que en África el VHC es el factor de riesgo más importante. Lo que refleja la imprtancia de la "regionalidad" de este tipo de cáncer.
+
+![](/Users/camilocampusano/Documents/2do Semestre/R/GitHub Proyect/Trabajo_Final_CCampusano/hcc-dataset/FIG 02.png){fig.height=50%, fig.width=50%}
+
+**Tabla 1. Distribución geográfica de los principales factores de risgo de HCC a nivel global** _Contribución del alcoholismo, infección por VHB, HVC y otros en la HCC. Datos para ambos sexos en el 2015._ Obtenido de: @Fitzmaurice2017
+
+## Base de Datos
+  Este informe fue se basa en una base de datos de un Hospital Clínico de Portugal, con un n = 165 casos positivos con Diagnóstico de certeza imagenológico.
+  
+```{r, echo= FALSE}
+hcc_data_complete_balanced <- read_csv("hcc-dataset/hcc-data-complete-balanced.csv", 
+                                       col_types = cols(AFP = col_number(), 
+                                                        AHT = col_logical(), 
+                                                        ALP = col_number(), 
+                                                        ALT = col_number(), 
+                                                        AST = col_number(), 
+                                                        Age = col_number(), 
+                                                        Alcohol = col_logical(), 
+                                                        CRI = col_logical(), 
+                                                        Cirrhosis = col_logical(), 
+                                                        Class = col_logical(), 
+                                                        Creatinine = col_number(), 
+                                                        Diabetes = col_logical(), 
+                                                        Dir_Bil = col_number(),
+                                                        Endemic = col_logical(), 
+                                                        Ferritin = col_number(),
+                                                        GGT = col_number(), 
+                                                        Gender = col_logical(),
+                                                        Grams_day = col_number(), 
+                                                        HBcAb = col_logical(),
+                                                        HBeAg = col_logical(), 
+                                                        HBsAg = col_logical(),
+                                                        HCVAb = col_logical(), 
+                                                        HIV = col_logical(),
+                                                        Hallmark = col_logical(), 
+                                                        Hemochro = col_logical(),
+                                                        INR = col_number(), 
+                                                        Iron = col_number(),
+                                                        Major_Dim = col_number(), 
+                                                        Metastasis = col_logical(),
+                                                        NASH = col_logical(), 
+                                                        Nodule = col_number(),
+                                                        Obesity = col_logical(),
+                                                        PHT = col_logical(),
+                                                        PVT = col_logical(), 
+                                                        Packs_year = col_number(),
+                                                        Sat = col_number(), 
+                                                        Smoking = col_logical(),
+                                                        Spleno = col_logical(), 
+                                                        Symptoms = col_logical(),
+                                                        TP = col_number(), 
+                                                        Total_Bil = col_number(),
+                                                        Varices = col_logical()))
+```
+
+# Objetivo
+Establecer un score clínico en base a pruebas serológicas para hacer un diagnóstico de certeza sin necesidad de utilizar pruebas imagenológicas.
+
+# Resultados
+## Manejo de los datos
+Primero, con el fin de trabajar sólo con aquellos datos de interés epidemiológico y biomédico, a partir de la base de datos original realicé un filtro dejando los parámetros consignados en la **Tabla 3**. En la **Tabla 2** se muestra un resumen de los primeros  5 pacientes con los parámetros establecidos en la _Tabla 3_.
+
+Código|Dato
+------|----
+Gender|Género
+Symptoms|Presencia de Sintomatología
+HBsAg|Antígeno de Superficie del VHB 
+HBeAg|Antígeno "e" del VHB
+HCVAb|Anticuerpos contra VHC IgG
+Alcohol|Consumo de alcohol
+HIV|Portar VIH
+Obesity|Obesidad
+Diabetes|Diabetes
+NASH|Hígado graso no alcoholico
+Smoking|Fumar
+Cirrhosis|Cirrosis
+Metastasis|Metástasis
+ALT|Transaminasas (ALT)
+AST|Transaminasas (AST)
+GGT|Transaminasas (GGT)
+ALP|Fosfatasas Alcalinas
+Creatinine|Creatinina
+Dir_Bil|Bilirrubina Directa
+Total_Bil|Bilirrubina Total
+Albumin|Albúmina
+INR|INR
+Platelets|Recuento plaquetario
+
+**Tabla 3.** _Códigos utlizados en el estudio_
+
+```{r, echo= FALSE, fig.width= 2}
+hcc_fil <- hcc_data_complete_balanced %>% dplyr::select(Gender, Symptoms, HBsAg, HBeAg, HCVAb, Alcohol, HIV, Obesity, Diabetes, NASH, Smoking, Cirrhosis, PHT, PVT, Metastasis, ALT, AST, GGT, ALP, Creatinine, Dir_Bil, Total_Bil, Albumin, INR, Platelets)
+
+kable(cbind(hcc_fil [1:5,]), caption = "Tabla 2. Primer Filtro") %>%
+  kable_styling()
+```
+
+## Significancia Clínica
+Dentro de los parámetros seleccionados el **alcoholismo, la presencia de sintomatología y de cirrosis** correspondieron a los más prevalentes en la cohorte analizada, presentando un _72%, 70% y 90%_, respectivamente.
+
+### Alcoholismo
+```{r, echo= FALSE, fig.height=2.5, fig.width=2.5}
+alcohol_n <- hcc_fil %>% count(Alcohol)
+ggplot(alcohol_n, aes(x = Alcohol, y= n, full_width = F, position = "float_right")) +
+  geom_bar(stat = "identity") +
+  scale_fill_gradientn(colours = terrain.colors(6))
+```
+
+Se presentan `r alcohol_n$n[2]` pacientes con alcoholismo.
+
+### Presencia de Sintomatología
+```{r, echo= FALSE, fig.height=2.5, fig.width=2.5}
+sintomas_n <- hcc_fil %>% count(Symptoms)
+ggplot(sintomas_n, aes(x = Symptoms, y= n)) +
+  geom_bar(stat = "identity") +
+  scale_fill_gradientn(colours = terrain.colors(6))
+```
+
+Se presentan `r sintomas_n$n[2]` pacientes con alcoholismo.
+
+### Cirrosis
+```{r, echo= F, fig.height=2.5, fig.width=2.5}
+cirrhosis_n <- hcc_fil %>% count(Cirrhosis)
+ggplot(cirrhosis_n, aes(x = Cirrhosis, y= n)) +
+  geom_bar(stat = "identity") +
+  scale_fill_gradientn(colours = terrain.colors(6))
+```
+
+Se presentan `r cirrhosis_n$n[2]` pacientes con alcoholismo.
+
+## Segundo Filtro
+### Primer acercamiento
+Luego, con los datos anteriores, fue llevado a cabo un nuevo filtro para determinar una fórmula. Donde se contempló el alcohol, la sintomatología, la GGT > 100 y ALT > 100. 
+
+```{r,echo= FALSE}
+SA <- hcc_fil %>% filter(Alcohol == "TRUE", Symptoms == "TRUE", GGT > 100, ALT > 100)
+kable(cbind(SA [1:5,]), caption = "Tabla 4. Signicancia Clínica, _Sólo se muestran los datos de los 5 primeros pacientes_") %>%
+  kable_styling()
+```
+
+
+### Estadígrafo
+
+```{r, echo= FALSE}
+formula <- lm(GGT ~ I(ALT^2), data = SA)
+```
+
+```{r, echo= FALSE}
+summary(formula)
+
+glance(formula)
+```
+
+## Segundo Filtro
+### Segundo acercamiento
+Luego, con los datos anteriores, fue llevado a cabo un nuevo filtro para determinar una fórmula. Donde se contempló el alcohol, la sintomatología, la GGT > 100 y ALT > 100. 
+
+```{r, echo= FALSE}
+SA_02 <- hcc_fil %>% filter(Alcohol == "TRUE", Symptoms == "TRUE", GGT > 100, ALT > 100, AST > 100)
+kable(cbind(SA_02 [1:5,]), caption = "Tabla 5. Signicancia Clínica, _Sólo se muestran los datos de los 5 primeros pacientes_") %>%
+  kable_styling()
+```
+
+
+### Estadígrafo
+
+En con estos análisis, y dado el **AIC**, la segunda fórmula sería la mejor para representar los datos presentados.
+
+Tal y como recomendó Derek Corcoran realicé un análisis binomial. Sin embargo el AIC no fue inferior al señalado previamente.
+
+Finalmente destacar que busqué paquetes que me ayudaran a generar valores _cut-off_,pero no me funcionaron.
+
+```{r, echo= FALSE}
+formula_02 <- lm(GGT ~ I(ALT^2), data = SA_02)
+```
+
+```{r, echo= FALSE}
+summary(formula_02)
+glance(formula_02)
+```
+
+```{r, echo= FALSE}
+ggplot(hcc_fil, aes(x= ALT + AST, y=GGT)) +
+  geom_path(aes(group = GGT, color = Symptoms)) +
+  geom_point(aes(color = Symptoms)) +
+  theme_classic()
+```
+
+
+## Otros Análisis
+```{r, eval= FALSE}
+hcc_data_complete_balanced_01 <- read_csv("hcc-dataset/hcc-data-complete-balanced.csv", 
+                                       col_types = cols(AFP = col_number(), 
+                                                        AHT = col_number(), 
+                                                        ALP = col_number(), 
+                                                        ALT = col_number(), 
+                                                        AST = col_number(), 
+                                                        Age = col_number(), 
+                                                        Alcohol = col_number(), 
+                                                        CRI = col_number(), 
+                                                        Cirrhosis = col_number(), 
+                                                        Class = col_number(), 
+                                                        Creatinine = col_number(), 
+                                                        Diabetes = col_number(), 
+                                                        Dir_Bil = col_number(),
+                                                        Endemic = col_number(), 
+                                                        Ferritin = col_number(),
+                                                        GGT = col_number(), 
+                                                        Gender = col_number(),
+                                                        Grams_day = col_number(), 
+                                                        HBcAb = col_number(),
+                                                        HBeAg = col_number(), 
+                                                        HBsAg = col_number(),
+                                                        HCVAb = col_number(), 
+                                                        HIV = col_number(),
+                                                        Hallmark = col_number(), 
+                                                        Hemochro = col_number(),
+                                                        INR = col_number(), 
+                                                        Iron = col_number(),
+                                                        Major_Dim = col_number(), 
+                                                        Metastasis = col_number(),
+                                                        NASH = col_number(), 
+                                                        Nodule = col_number(),
+                                                        Obesity = col_number(),
+                                                        PHT = col_number(),
+                                                        PVT = col_number(), 
+                                                        Packs_year = col_number(),
+                                                        Sat = col_number(), 
+                                                        Smoking = col_number(),
+                                                        Spleno = col_number(), 
+                                                        Symptoms = col_number(),
+                                                        TP = col_number(), 
+                                                        Total_Bil = col_number(),
+                                                        Varices = col_number()))
+
+hcc_fil_num <- hcc_data_complete_balanced_01 %>% dplyr::select(Gender, Symptoms, HBsAg, HBeAg, HCVAb, Alcohol, HIV, Obesity, Diabetes, NASH, Smoking, Cirrhosis, PHT, PVT, Metastasis, ALT, AST, GGT, ALP, Creatinine, Dir_Bil, Total_Bil, Albumin, INR, Platelets)
+
+SA_num <- hcc_fil_num %>% filter(Alcohol == 1, Symptoms == 1, GGT > 100, ALT > 100)
+
+formula_02_num <- glm(GGT ~ I(ALT^2), data = SA_num)
+summary(formula_02_num)
+glance(formula_02_num)
+
+SA_03_num <- hcc_fil_num %>% filter(Alcohol == 1, Symptoms == 1, GGT > 100, ALT > 100, AST > 100)
+
+formula_03_num <- glm(GGT ~ I(ALT^2), data = SA_num)
+summary(formula_03_num)
+glance(formula_03_num)
+```
+
+# Conclusiones
+Se presentan los datos de una base de datos de HCC, con un universo de 165 casos provenientes de un Hospital Clínico de Portugal que cuentan con diagnóstico de certeza llevado a cabo mediante imagenología.
+
+Se hayó en la base de datos una prevalencia de la HCC en la población masculina y femenina, en una relación de 4:1, muy superior a lo señalado en la bibliografía.
+
+Por otro lado, se presenta al alcoholismo, la presencia de sintomatología y la cirrosis como los factores más frecuentes en la población.
+
+Con relación al manejo de los datos, se probó con distintos modelos, siendo el más efectivo y con mejor AIC un modelo lineal
+
+# Bibliografía
